@@ -31,7 +31,7 @@ System Memory Map:
 
 CHIP8_EMULATOR::CHIP8_EMULATOR()
 {
-    //do nothing currently
+    initEmulator();
 }
 
 CHIP8_EMULATOR::~CHIP8_EMULATOR()
@@ -47,6 +47,10 @@ int CHIP8_EMULATOR::initEmulator()
     delayTimer = 0;
     soundTimer = 0;
 
+    indexRegister = 0;
+    programCounter = 0;
+
+    isRomLoaded = false;
     return STATUS_SUCCESS;
 }
 
@@ -69,12 +73,38 @@ int CHIP8_EMULATOR::loadROM(char filename[MAX_FILENAME_LEN])
 
     //Now we need to load the program into RAM
     inFile.seekg(0, ios::beg);  //seek to the beginning of the ROM
-    inFile.read((char *) &this->memory[BASE_RAM_OFFSET], filesize);
-    // do
-    // {
-        
-    // }while(!inFile.eof());
-
-    inFile.close();
+    inFile.read((char *) &this->memory[BASE_RAM_OFFSET], filesize);     //block load the ROM into emulator RAM
+    this -> isRomLoaded = true;
+    inFile.close();     //close the ROM file
+    positionPC();       //move the program counter to point to start of execution RAM
     return STATUS_SUCCESS;
+}
+
+void CHIP8_EMULATOR::positionPC()
+{
+    programCounter = (ushort*) &memory[BASE_RAM_OFFSET];
+}
+
+int CHIP8_EMULATOR::emulatorTick()
+{
+    ushort opcode = 0;
+    //Fetch Instruction
+    opcode = fetchInstruction(programCounter);
+    cout << "Fetched Opcode: 0x%4x" << opcode << endl;
+
+    //Decode Instruction
+
+    //Execute Instruction
+
+    return STATUS_SUCCESS;
+}
+
+ushort CHIP8_EMULATOR::fetchInstruction(ushort *pc)
+{
+    ushort opcode = 0;
+    // assert((("Tried to fetch an instruction out of bounds!" , (pc >= BASE_RAM_OFFSET && pc <= UPPER_RAM_OFFSET)));
+    assert( pc >= (ushort*)&memory[BASE_RAM_OFFSET] && pc <= (ushort*)&memory[UPPER_RAM_OFFSET] );    //tried to fetch an instruction out of bounds
+    opcode = *pc;
+    pc++; //increment instruction pointer to the next instruction
+    return opcode;
 }

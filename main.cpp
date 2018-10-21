@@ -30,6 +30,13 @@ int main(int argc, char *argv[])
     CHIP8_EMULATOR emulator;
     emulator.initEmulator();
     emulator.loadROM(TESTFILENAME);
+    unsigned int emulatorCycleCnt = 0;
+    while(1)
+    {
+        ++emulatorCycleCnt;
+        emulator.emulatorTick();
+        cout << "Emulator Cycle Count: " << emulatorCycleCnt << endl;
+    }
 
     return 0;
 }

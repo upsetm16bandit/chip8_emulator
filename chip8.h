@@ -14,8 +14,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. 
 */
-
 #pragma once
+
+#include <cassert>
 
 #define MEMORY_SIZE         4096        //chip 8 vm only has 4k
 #define CPU_GPR_COUNT       16
@@ -40,15 +41,20 @@ class CHIP8_EMULATOR
     CHIP8_EMULATOR();
     ~CHIP8_EMULATOR();
 
-    int initEmulator();                               //initializes emulator to fresh state after "xxReset"
-    ushort fetch_instruction(unsigned int pc);          //fetches the instruction at the pc
+    int initEmulator();                                 //initializes emulator to fresh state after "xxReset"
+    int resetEmulator();                                //unload ROM and reset GPRs & instruction pointer
+    int emulatorTick();                                 //Perform a fetch/execute/decode emulator cycle
+    ushort fetchInstruction(ushort *pc);                //fetches the instruction at the pc(program counter)/instruction pointer
+    int decodeInstruction(ushort opcode);
+    //int executeInstruction()
 
     int loadROM(char filename[MAX_FILENAME_LEN]);       //loads ROM file into memory
+    void positionPC();                                   //moves the PC to point to the start of RAM for execution
 
 
     private:
-    unsigned short int programCounter;
-    unsigned short int indexRegister;
+    ushort *programCounter;
+    ushort indexRegister;
     unsigned char v[CPU_GPR_COUNT];                     //General purpose registers
     unsigned char memory[MEMORY_SIZE];                  //this holds the entirety of the emulator's memory
     unsigned char graphics[GFX_BUFFER_SIZE];
@@ -56,6 +62,7 @@ class CHIP8_EMULATOR
     unsigned char soundTimer;                           //counts down @60hz
     unsigned char *sb;
     unsigned char *sp;
+    bool isRomLoaded;                                   //whether a ROM is currently loaded into emulator RAM
 };
 
 
