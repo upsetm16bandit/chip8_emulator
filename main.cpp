@@ -16,13 +16,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <iostream>
-//#include <atomic>
+// #include <atomic>
+#include "chip8.h"
+
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
-    //std::atomic<int> myVar;
-    myVar = 0;
+    // std::atomic<int> myVar;
+    // myVar = 0;
+    char TESTFILENAME[] = "Breakout.ch8";
+    CHIP8_EMULATOR emulator;
+    emulator.initEmulator();
+    emulator.loadROM(TESTFILENAME);
+
     return 0;
 }
