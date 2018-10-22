@@ -51,6 +51,7 @@ int CHIP8_EMULATOR::initEmulator()
     programCounter = 0;
 
     isRomLoaded = false;
+    sizeOfROM = 0;
     return STATUS_SUCCESS;
 }
 
@@ -75,6 +76,7 @@ int CHIP8_EMULATOR::loadROM(char filename[MAX_FILENAME_LEN])
     inFile.seekg(0, ios::beg);  //seek to the beginning of the ROM
     inFile.read((char *) &this->memory[BASE_RAM_OFFSET], filesize);     //block load the ROM into emulator RAM
     this -> isRomLoaded = true;
+    this -> sizeOfROM = (ushort) filesize;
     inFile.close();     //close the ROM file
     positionPC();       //move the program counter to point to start of execution RAM
     return STATUS_SUCCESS;
@@ -85,6 +87,11 @@ void CHIP8_EMULATOR::positionPC()
     programCounter = (ushort*) &memory[BASE_RAM_OFFSET];
 }
 
+ushort CHIP8_EMULATOR::getSizeOfLoadedROM()
+{
+    return sizeOfROM;
+}
+
 int CHIP8_EMULATOR::emulatorTick()
 {
     ushort opcode = 0;
@@ -93,6 +100,7 @@ int CHIP8_EMULATOR::emulatorTick()
     cout << "Fetched Opcode: 0x" << hex << opcode << dec << endl;
 
     //Decode Instruction
+    decodeAndExecuteInstruction(opcode);  //decode opcode and execute
 
     //Execute Instruction
 
@@ -103,8 +111,174 @@ ushort CHIP8_EMULATOR::fetchInstruction()
 {
     ushort opcode = 0;
     // assert((("Tried to fetch an instruction out of bounds!" , (pc >= BASE_RAM_OFFSET && pc <= UPPER_RAM_OFFSET)));
-    assert( programCounter >= (ushort*)&memory[BASE_RAM_OFFSET] && programCounter <= (ushort*)&memory[UPPER_RAM_OFFSET] );    //tried to fetch an instruction out of bounds
+    assert( programCounter >= (ushort*)&memory[BASE_RAM_OFFSET] && programCounter <= (ushort*)&memory[UPPER_RAM_OFFSET] );    //tried to fetch an instruction out of RAM bounds
     opcode = *programCounter;
     programCounter++; //increment instruction pointer to the next instruction
     return ( ((opcode & 0x00FF) <<8) | ((opcode & 0xFF00) >> 8) );  //need to convert from little endian to big endian before returning the opcode
+}
+
+int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
+{
+    /*
+     * CHIP-8 has 35 opcodes, which are all two bytes long and stored big-endian. The opcodes are listed below, in hexadecimal and with the following symbols:
+     * NNN: address
+     * NN: 8-bit constant
+     * N: 4-bit constant
+     * X and Y: 4-bit register identifier
+     * PC : Program Counter
+     * I : 16bit register (For memory address) (Similar to void pointer)
+     */
+    int returnValue = STATUS_SUCCESS;
+    //skipping implementation of opcode 0NNN :Calls RCA 1802 program at address NNN. Not necessary for most ROMs.
+    switch(opcode & 0xF000)
+    {
+        case 0x0000:
+            switch(opcode & 0x00FF)
+            {
+                case 0x00E0:    //0x00E0
+                    //Clears the screen.
+                    break;
+                case 0x00EE:    //0x00EE
+                    //Returns from a subroutine.
+                    break;
+                default:
+                    cerr << "Unrecognized opcode: 0x" << hex << opcode << dec << endl;
+                    returnValue = ERR_INVALID_OPCODE;
+            }
+            break;
+        case 0x1000:    //0x1NNN
+            //goto NNN
+            break;
+        case 0x2000:    //0x2NNN
+            //Call subroutine at NNN
+            break;
+        case 0x3000:    //0x3XNN
+            //Skips the next instruction if VX equals NN. (Usually the next instruction is a jump to skip a code block)
+            break;
+        case 0x4000:    //0x4XNN
+            //Skips the next instruction if VX doesn't equal NN. (Usually the next instruction is a jump to skip a code block)
+            break;
+        case 0x5000:    //0x5XY0
+            //Skips the next instruction if VX equals VY. (Usually the next instruction is a jump to skip a code block)
+            break;
+        case 0x6000:    //0x6XNN
+            //Sets VX to NN
+            v[(opcode & 0x0F00)>>8] = opcode & 0x00FF;
+            break;
+        case 0x7000:    //0x7XNN
+            //Adds NN to VX. (Carry flag is not changed)
+            v[(opcode & 0x0F00)>>8] += opcode & 0x00FF;
+            break;
+        case 0x8000:    //0x8XY0 - 0x8XYE
+            switch(opcode & 0x000F)
+            {
+                case 0x0000:        //0x8XY0
+                    //Sets VX to the value of VY.
+                    break;
+                case 0x0001:
+                    //Sets VX to VX or VY. (Bitwise OR operation)
+                    break;
+                case 0x0002:
+                    //Sets VX to VX and VY. (Bitwise AND operation)
+                    break;
+                case 0x0003:
+                    //Sets VX to VX xor VY.
+                    break;
+                case 0x0004:
+                    //Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there isn't.
+                    break;
+                case 0x0005:
+                    //VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
+                    break;
+                case 0x0006:
+                    //Stores the least significant bit of VX in VF and then shifts VX to the right by 1
+                    break;
+                case 0x0007:
+                    //Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't
+                    break;
+                case 0x000E:
+                    //Stores the most significant bit of VX in VF and then shifts VX to the left by 1
+                    break;
+                default:
+                    cerr << "Unrecognized opcode: 0x" << hex << opcode << dec << endl;
+                    returnValue = ERR_INVALID_OPCODE;
+            }
+            break;
+        case 0x9000:    //0x9XY0
+            //Skips the next instruction if VX doesn't equal VY. (Usually the next instruction is a jump to skip a code block)
+            break;
+        case 0xA000:    //0xANNN
+            //Sets IndexRegister to the address NNN.
+            indexRegister = opcode & 0x0FFF;
+            break;
+        case 0xB000:    //0xBNNN
+            //Jumps to the address NNN plus V0.
+            break;
+        case 0xC000:    //0xCXNN
+            //Sets VX to the result of a bitwise and operation on a random number (Typically: 0 to 255) and NN
+            break;
+        case 0xD000:    //0xDXYN
+            /*Draws a sprite at coordinate (VX, VY) that has a width of 8 pixels and a height of N pixels. Each row of 
+             *8 pixels is read as bit-coded starting from memory location I; I value doesn’t change after the execution 
+             of this instruction. As described above, VF is set to 1 if any screen pixels are flipped from set to unset 
+             when the sprite is drawn, and to 0 if that doesn’t happen*/
+             break;
+        case 0xE000:    //0xEX9E or 0xExA1
+            switch(opcode & 0xF0FF)
+            {
+                case 0xE09E:    //0xEX9E
+                    //Skips the next instruction if the key stored in VX is pressed. (Usually the next instruction is a jump to skip a code block)
+                    break;
+                case 0xE0A1:    //0xE0A1
+                    //Skips the next instruction if the key stored in VX isn't pressed. (Usually the next instruction is a jump to skip a code block)
+                    break;
+                default:
+                    cerr << "Unrecognized opcode: 0x" << hex << opcode << dec << endl;
+                    returnValue = ERR_INVALID_OPCODE;
+            }
+            break;
+        case 0xF000:    //0xFX07 or 0xFX0A or 0xFX15 or 0xFX18 or 0xFX1E or 0xFX29 or 0xFX33 or 0xFX55 or 0xFX65
+            switch(opcode & 0xF0FF)
+            {
+                case 0xF007:    //0xFX07
+                    //Sets VX to the value of the delay timer.
+                    break;
+                case 0xF00A:    //0xFX0A
+                    //A key press is awaited, and then stored in VX. (Blocking Operation. All instruction halted until next key event)
+                    break;
+                case 0xF015:    //0xFX15
+                    //Sets the delay timer to VX.
+                    break;
+                case 0xF018:    //0xFX18
+                    //Sets the sound timer to VX.
+                    break;
+                case 0xF01E:    //0xFX1E
+                    //Adds VX to indexRegister
+                    break;
+                case 0xF029:    //0xFX29
+                    //Sets I to the location of the sprite for the character in VX. Characters 0-F (in hexadecimal) are represented by a 4x5 font
+                    break;
+                case 0xF033:    //0xFX33
+                    /* Stores the binary-coded decimal representation of VX, with the most significant of three digits at the address in I, 
+                     * the middle digit at I plus 1, and the least significant digit at I plus 2. (In other words, take the decimal 
+                     * representation of VX, place the hundreds digit in memory at location in I, the tens digit at location I+1, and the 
+                     * ones digit at location I+2.)
+                    */                   
+                    break;
+                case 0xF055:    //0xFX55
+                    //Stores V0 to VX (including VX) in memory starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified.
+                    break;
+                case 0xF065:    //0xFX65
+                    //Fills V0 to VX (including VX) with values from memory starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified.
+                    break;
+                default:
+                    cerr << "Unrecognized opcode: 0x" << hex << opcode << dec << endl;
+                    returnValue = ERR_INVALID_OPCODE;
+            }
+            break;
+            default:
+                cerr << "Unrecognized opcode: 0x" << hex << opcode << dec << endl;
+                returnValue = ERR_INVALID_OPCODE;
+    }
+    return returnValue;
 }

@@ -32,6 +32,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define ERR_UNABLE_OPEN_FILE        -20
 #define ERR_CORRUPTED_ROM           -21
 #define ERR_ROM_GREATER_THAN_RAM    -22
+#define ERR_INVALID_OPCODE          -30
 
 typedef unsigned short int ushort;
 
@@ -45,11 +46,13 @@ class CHIP8_EMULATOR
     int resetEmulator();                                //unload ROM and reset GPRs & instruction pointer
     int emulatorTick();                                 //Perform a fetch/execute/decode emulator cycle
     ushort fetchInstruction();                          //fetches the instruction at the pc(program counter)/instruction pointer
-    int decodeInstruction(ushort opcode);
+    int decodeAndExecuteInstruction(ushort opcode);
     //int executeInstruction()
 
     int loadROM(char filename[MAX_FILENAME_LEN]);       //loads ROM file into memory
     void positionPC();                                   //moves the PC to point to the start of RAM for execution
+
+    ushort getSizeOfLoadedROM();                        //returns the number of bytes taken up by the currently loaded ROM
 
 
     private:
@@ -63,6 +66,7 @@ class CHIP8_EMULATOR
     unsigned char *sb;
     unsigned char *sp;
     bool isRomLoaded;                                   //whether a ROM is currently loaded into emulator RAM
+    ushort sizeOfROM;
 };
 
 
