@@ -53,6 +53,8 @@ class CHIP8_EMULATOR
     void positionPC();                                   //moves the PC to point to the start of RAM for execution
 
     ushort getSizeOfLoadedROM();                        //returns the number of bytes taken up by the currently loaded ROM
+    ushort* logicalAddressToPhysical(ushort logicalAddr);
+    ushort physicalAddressToLogical(ushort *physicalAddr);
 
 
     private:

@@ -92,6 +92,16 @@ ushort CHIP8_EMULATOR::getSizeOfLoadedROM()
     return sizeOfROM;
 }
 
+ushort* CHIP8_EMULATOR::logicalAddressToPhysical(ushort logicalAddr) //this should be validated...
+{
+    return (ushort*) &memory[BASE_RAM_OFFSET + (logicalAddr & 0xFFF)];
+}
+
+ushort CHIP8_EMULATOR::physicalAddressToLogical(ushort *physicalAddr)  //this should be validated...
+{
+    return (ushort) (physicalAddr - (ushort*)&memory[BASE_RAM_OFFSET]) &0xFFF;
+}
+
 int CHIP8_EMULATOR::emulatorTick()
 {
     ushort opcode = 0;
@@ -174,29 +184,35 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
             {
                 case 0x0000:        //0x8XY0
                     //Sets VX to the value of VY.
+                    v[(opcode & 0x0F00)>>8] = v[(opcode & 0x00F0)>>4];
                     break;
-                case 0x0001:
+                case 0x0001:        //0x8XY1
                     //Sets VX to VX or VY. (Bitwise OR operation)
+                    v[(opcode & 0x0F00)>>8] |= v[(opcode & 0x00F0)>>4];
                     break;
-                case 0x0002:
+                case 0x0002:        //0x8XY2
                     //Sets VX to VX and VY. (Bitwise AND operation)
+                    v[(opcode & 0x0F00)>>8] &= v[(opcode & 0x00F0)>>4];
                     break;
-                case 0x0003:
+                case 0x0003:        //0x8XY3
                     //Sets VX to VX xor VY.
+                    v[(opcode & 0x0F00)>>8] ^= v[(opcode & 0x00F0)>>4];
                     break;
-                case 0x0004:
+                case 0x0004:        //0x8XY4
                     //Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there isn't.
                     break;
-                case 0x0005:
+                case 0x0005:        //0x8XY5
                     //VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
                     break;
-                case 0x0006:
+                case 0x0006:        //0x8XY6
                     //Stores the least significant bit of VX in VF and then shifts VX to the right by 1
+                    v[0xF] = v[(opcode & 0x0F00)>>8] & 0x0001;
+                    v[(opcode & 0x0F00)>>8] = v[(opcode & 0x0F00)>>8] >> 1;
                     break;
-                case 0x0007:
+                case 0x0007:        //0x8XY7
                     //Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't
                     break;
-                case 0x000E:
+                case 0x000E:        //0x8XYE
                     //Stores the most significant bit of VX in VF and then shifts VX to the left by 1
                     break;
                 default:
