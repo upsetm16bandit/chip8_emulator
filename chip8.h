@@ -44,7 +44,7 @@ class CHIP8_EMULATOR
     int initEmulator();                                 //initializes emulator to fresh state after "xxReset"
     int resetEmulator();                                //unload ROM and reset GPRs & instruction pointer
     int emulatorTick();                                 //Perform a fetch/execute/decode emulator cycle
-    ushort fetchInstruction(ushort *pc);                //fetches the instruction at the pc(program counter)/instruction pointer
+    ushort fetchInstruction();                          //fetches the instruction at the pc(program counter)/instruction pointer
     int decodeInstruction(ushort opcode);
     //int executeInstruction()
 

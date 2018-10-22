@@ -89,8 +89,8 @@ int CHIP8_EMULATOR::emulatorTick()
 {
     ushort opcode = 0;
     //Fetch Instruction
-    opcode = fetchInstruction(programCounter);
-    cout << "Fetched Opcode: 0x%4x" << opcode << endl;
+    opcode = fetchInstruction();
+    cout << "Fetched Opcode: 0x" << hex << opcode << dec << endl;
 
     //Decode Instruction
 
@@ -99,12 +99,12 @@ int CHIP8_EMULATOR::emulatorTick()
     return STATUS_SUCCESS;
 }
 
-ushort CHIP8_EMULATOR::fetchInstruction(ushort *pc)
+ushort CHIP8_EMULATOR::fetchInstruction()
 {
     ushort opcode = 0;
     // assert((("Tried to fetch an instruction out of bounds!" , (pc >= BASE_RAM_OFFSET && pc <= UPPER_RAM_OFFSET)));
-    assert( pc >= (ushort*)&memory[BASE_RAM_OFFSET] && pc <= (ushort*)&memory[UPPER_RAM_OFFSET] );    //tried to fetch an instruction out of bounds
-    opcode = *pc;
-    pc++; //increment instruction pointer to the next instruction
-    return opcode;
+    assert( programCounter >= (ushort*)&memory[BASE_RAM_OFFSET] && programCounter <= (ushort*)&memory[UPPER_RAM_OFFSET] );    //tried to fetch an instruction out of bounds
+    opcode = *programCounter;
+    programCounter++; //increment instruction pointer to the next instruction
+    return ( ((opcode & 0x00FF) <<8) | ((opcode & 0xFF00) >> 8) );  //need to convert from little endian to big endian before returning the opcode
 }
