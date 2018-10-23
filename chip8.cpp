@@ -200,6 +200,15 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
                     break;
                 case 0x0004:        //0x8XY4
                     //Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there isn't.
+                    if( ((ushort) v[(opcode & 0x0F00)>>8] + (ushort) v[(opcode & 0x00F0)>>4]) >255) //we need to set the carry flag
+                    {
+                        v[0xF] = 1;
+                    }
+                    else
+                    {
+                        v[0xF] = 0;
+                    }
+                    v[(opcode & 0x0F00)>>8] += v[(opcode & 0x00F0)>>4];
                     break;
                 case 0x0005:        //0x8XY5
                     //VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
