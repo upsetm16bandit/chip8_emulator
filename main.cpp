@@ -26,7 +26,8 @@ int main(int argc, char *argv[])
 {
     // std::atomic<int> myVar;
     // myVar = 0;
-    char TESTFILENAME[] = "Breakout.ch8";
+    // char TESTFILENAME[] = "Breakout.ch8";
+    char TESTFILENAME[] = "test_vector.ch8";
     CHIP8_EMULATOR emulator;
     emulator.initEmulator();
     emulator.loadROM(TESTFILENAME);

@@ -212,6 +212,17 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
                     break;
                 case 0x0005:        //0x8XY5
                     //VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
+                    if (v[(opcode & 0x0F00)>>8] < v[(opcode & 0x00F0)>>4])  //Vx < Vy  when computing Vx - Vy a borrow must be performed
+                    {
+                        //borrow performed, set v[0xF] (carry flag) = 0
+                        v[0xF] = 0;
+                    }
+                    else
+                    {
+                        //no borrow performed, set v[0xF] (carry flag) = 1
+                        v[0xF] = 1;
+                    }
+                    v[(opcode & 0x0F00)>>8] -= v[(opcode & 0x00F0)>>4];  //Vx = Vx - Vy
                     break;
                 case 0x0006:        //0x8XY6
                     //Stores the least significant bit of VX in VF and then shifts VX to the right by 1
@@ -220,9 +231,22 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
                     break;
                 case 0x0007:        //0x8XY7
                     //Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't
+                    if (v[(opcode & 0x00F0)>>4] < v[(opcode & 0x0F00)>>8])  //Vy < Vx  when computing Vy - Vx a borrow must be performed
+                    {
+                        //borrow performed, set v[0xF] (carry flag) = 0
+                        v[0xF] = 0;
+                    }
+                    else
+                    {
+                        //no borrow performed, set v[0xF] (carry flag) = 1
+                        v[0xF] = 1;
+                    }
+                    v[(opcode & 0x0F00)>>8] = v[(opcode & 0x00F0)>>4] - v[(opcode & 0x0F00)>>8];  //Vx = Vy - Vx
                     break;
                 case 0x000E:        //0x8XYE
                     //Stores the most significant bit of VX in VF and then shifts VX to the left by 1
+                    v[0xF] = (v[(opcode & 0x0F00)>>8] & 0x80) >> 7;
+                    v[(opcode & 0x0F00)>>8] <<= 1;
                     break;
                 default:
                     cerr << "Unrecognized opcode: 0x" << hex << opcode << dec << endl;
