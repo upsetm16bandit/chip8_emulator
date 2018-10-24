@@ -87,6 +87,19 @@ void CHIP8_EMULATOR::positionPC()
     programCounter = (ushort*) &memory[BASE_RAM_OFFSET];
 }
 
+int CHIP8_EMULATOR::incrementPC(ushort offset)
+{   //TODO: perform bounds checking to ensure we dont increment PC outside of executable RAM region
+    programCounter += offset; //increment program counter by offset
+    return STATUS_SUCCESS;
+}
+
+int CHIP8_EMULATOR::setPC(ushort address)
+{   //TODO: perform bounds checking
+    // programCounter = &memory[BASE_RAM_OFFSET] + address;
+    programCounter = logicalAddressToPhysical(address);
+    return STATUS_SUCCESS;
+}
+
 ushort CHIP8_EMULATOR::getSizeOfLoadedROM()
 {
     return sizeOfROM;
@@ -255,6 +268,11 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
             break;
         case 0x9000:    //0x9XY0
             //Skips the next instruction if VX doesn't equal VY. (Usually the next instruction is a jump to skip a code block)
+            if(v[(opcode & 0x0F00)>>8] != v[(opcode & 0x00F0)>>4])
+            {
+                // programCounter++; //increment the program counter to skip the next instruction
+                incrementPC();  //increment the program counter to skip the next instruction
+            }
             break;
         case 0xA000:    //0xANNN
             //Sets IndexRegister to the address NNN.
@@ -262,6 +280,7 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
             break;
         case 0xB000:    //0xBNNN
             //Jumps to the address NNN plus V0.
+            setPC(v[0] + (opcode & 0x0FFF) );
             break;
         case 0xC000:    //0xCXNN
             //Sets VX to the result of a bitwise and operation on a random number (Typically: 0 to 255) and NN

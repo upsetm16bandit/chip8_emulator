@@ -50,7 +50,9 @@ class CHIP8_EMULATOR
     //int executeInstruction()
 
     int loadROM(char filename[MAX_FILENAME_LEN]);       //loads ROM file into memory
-    void positionPC();                                   //moves the PC to point to the start of RAM for execution
+    void positionPC();                                  //moves the PC to point to the start of RAM for execution
+    int incrementPC(ushort offset = 1);                 //increments the program counter
+    int setPC(ushort address);
 
     ushort getSizeOfLoadedROM();                        //returns the number of bytes taken up by the currently loaded ROM
     ushort* logicalAddressToPhysical(ushort logicalAddr);
