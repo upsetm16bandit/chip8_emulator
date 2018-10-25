@@ -70,6 +70,7 @@ class CHIP8_EMULATOR
     unsigned char *sb;
     unsigned char *sp;
     bool isRomLoaded;                                   //whether a ROM is currently loaded into emulator RAM
+    static bool isRNGSeeded;                            //whether pseudo-random number generator has been seeded. (init to false per c++ standard)
     ushort sizeOfROM;
 };
 
