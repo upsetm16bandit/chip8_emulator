@@ -386,7 +386,7 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
                     break;
 
                 case 0xF033:    //0xFX33
-                    /* Stores the binary-coded decimal representation of VX, with the most significant of three digits at the address in I, 
+                    /* Stores the binary-coded decimal representation of VX, with the most significant of three digits at the address in I,
                      * the middle digit at I plus 1, and the least significant digit at I plus 2. (In other words, take the decimal 
                      * representation of VX, place the hundreds digit in memory at location in I, the tens digit at location I+1, and the 
                      * ones digit at location I+2.)
@@ -395,10 +395,18 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
 
                 case 0xF055:    //0xFX55
                     //Stores V0 to VX (including VX) in memory starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified.
+                    for(char i = 0; i <= (opcode & 0x0F00)>>8; i++)
+                    {
+                        memory[BASE_RAM_OFFSET + indexRegister + (ushort)i] = v[(ushort)i];
+                    }
                     break;
 
                 case 0xF065:    //0xFX65
                     //Fills V0 to VX (including VX) with values from memory starting at address I. The offset from I is increased by 1 for each value written, but I itself is left unmodified.
+                    for(char i = 0; i <= (opcode & 0x0F00)>>8; i++)
+                    {
+                        v[(ushort)i] = memory[BASE_RAM_OFFSET + indexRegister + (ushort)i];
+                    }
                     break;
 
                 default:
