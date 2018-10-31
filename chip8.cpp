@@ -58,6 +58,9 @@ int CHIP8_EMULATOR::initEmulator()
     indexRegister = 0;
     programCounter = 0;
 
+    sb = logicalAddressToPhysical(BASE_STACK_OFFSET, 0);
+    sp = sb; //stack empty, top is the same as bottom
+
     isRomLoaded = false;
     sizeOfROM = 0;
     return STATUS_SUCCESS;
@@ -108,19 +111,37 @@ int CHIP8_EMULATOR::setPC(ushort address)
     return STATUS_SUCCESS;
 }
 
+void CHIP8_EMULATOR::pushAddrToStack(ushort address)
+{   //TODO: perform bounds checking on incrementing SP
+    if(sp != sb)
+    {
+        ++sp; //move the stack pointer up by 1 so we can push new value on
+    }
+    // *sp = ( (address & 0x00FF) << 8 | (address & 0xFF00) >> 8 );    //put new value onto the stack [will be big endian in memory]
+    *sp = address;    //put new value onto the stack [will be big endian in memory]    
+}
+
+ushort CHIP8_EMULATOR::popAddrFromStack()
+{
+    ushort addressValue;
+    addressValue = (*sp);
+    --sp; //move the stack pointer down by 1 since we have removed the value.
+    return addressValue;   //validate bounds?
+}
+
 ushort CHIP8_EMULATOR::getSizeOfLoadedROM()
 {
     return sizeOfROM;
 }
 
-ushort* CHIP8_EMULATOR::logicalAddressToPhysical(ushort logicalAddr) //this should be validated...
+ushort* CHIP8_EMULATOR::logicalAddressToPhysical(ushort logicalAddr, ushort base) //this should be validated...
 {
-    return (ushort*) &memory[BASE_RAM_OFFSET + (logicalAddr & 0xFFF)];
+    return (ushort*) &memory[base + (logicalAddr & 0xFFF)];
 }
 
 ushort CHIP8_EMULATOR::physicalAddressToLogical(ushort *physicalAddr)  //this should be validated...
 {
-    return (ushort) (physicalAddr - (ushort*)&memory[BASE_RAM_OFFSET]) &0xFFF;
+    return (ushort) ((char*)physicalAddr - (char*)&memory[BASE_RAM_OFFSET]) &0xFFF;
 }
 
 int CHIP8_EMULATOR::emulatorTick()
@@ -172,6 +193,8 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
 
                 case 0x00EE:    //0x00EE
                     //Returns from a subroutine.
+                    //pop return address off the stack and put it into programCounter
+                    programCounter = logicalAddressToPhysical(popAddrFromStack());
                     break;
 
                 default:
@@ -182,10 +205,14 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
 
         case 0x1000:    //0x1NNN
             //goto NNN
+            //TODO: perhaps perform bounds checking
+            setPC(opcode & 0x0FFF); //jmp to NNN by setting the PC there
             break;
 
         case 0x2000:    //0x2NNN
             //Call subroutine at NNN
+            pushAddrToStack(physicalAddressToLogical(programCounter));    //push current pc value onto the stack
+            setPC(opcode & 0x0FFF);             //jump to the subroutine
             break;
 
         case 0x3000:    //0x3XNN
@@ -415,9 +442,9 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
             }
             break;
 
-            default:
-                cerr << "Unrecognized opcode: 0x" << hex << opcode << dec << endl;
-                returnValue = ERR_INVALID_OPCODE;
+        default:
+            cerr << "Unrecognized opcode: 0x" << hex << opcode << dec << endl;
+            returnValue = ERR_INVALID_OPCODE;
     }
     return returnValue;
 }

@@ -28,6 +28,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define SIZE_OF_RAM         (UPPER_RAM_OFFSET - BASE_RAM_OFFSET)
 #define BASE_FONT_OFFSET    0x050
 
+#define BASE_STACK_OFFSET   0xEA0
+#define UPPER_STACK_OFFSET  0xEFF
+
 #define STATUS_SUCCESS 0
 #define ERR_UNABLE_OPEN_FILE        -20
 #define ERR_CORRUPTED_ROM           -21
@@ -53,9 +56,11 @@ class CHIP8_EMULATOR
     void positionPC();                                  //moves the PC to point to the start of RAM for execution
     int incrementPC(ushort offset = 1);                 //increments the program counter
     int setPC(ushort address);
+    void pushAddrToStack(ushort address);               //pushes return address onto the stack
+    ushort popAddrFromStack();                          //pops address off the stack
 
     ushort getSizeOfLoadedROM();                        //returns the number of bytes taken up by the currently loaded ROM
-    ushort* logicalAddressToPhysical(ushort logicalAddr);
+    ushort* logicalAddressToPhysical(ushort logicalAddr, ushort base = BASE_RAM_OFFSET);
     ushort physicalAddressToLogical(ushort *physicalAddr);
 
 
@@ -67,8 +72,8 @@ class CHIP8_EMULATOR
     unsigned char graphics[GFX_BUFFER_SIZE];
     unsigned char delayTimer;                           //counts down @60hz
     unsigned char soundTimer;                           //counts down @60hz
-    unsigned char *sb;
-    unsigned char *sp;
+    ushort *sb;
+    ushort *sp;
     bool isRomLoaded;                                   //whether a ROM is currently loaded into emulator RAM
     static bool isRNGSeeded;                            //whether pseudo-random number generator has been seeded. (init to false per c++ standard)
     ushort sizeOfROM;
