@@ -30,7 +30,10 @@ int main(int argc, char *argv[])
     char TESTFILENAME[] = "test_vector.ch8";
     CHIP8_EMULATOR emulator;
     emulator.initEmulator();
-    emulator.loadROM(TESTFILENAME);
+    if(emulator.loadROM(TESTFILENAME) != STATUS_SUCCESS)
+    {
+        return ERR_UNABLE_OPEN_FILE;
+    }
     unsigned int emulatorCycleCnt = 0;
     while(1)
     {
