@@ -362,6 +362,7 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
              *8 pixels is read as bit-coded starting from memory location I; I value doesn’t change after the execution 
              of this instruction. As described above, VF is set to 1 if any screen pixels are flipped from set to unset 
              when the sprite is drawn, and to 0 if that doesn’t happen*/
+             cerr << "opcode: 0x not yet implemented..." << hex << opcode << dec << endl;
              break;
 
         case 0xE000:    //0xEX9E or 0xExA1
@@ -391,6 +392,7 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
 
                 case 0xF00A:    //0xFX0A
                     //A key press is awaited, and then stored in VX. (Blocking Operation. All instruction halted until next key event)
+                    v[(opcode & 0x0F00)>>8] = (unsigned char) getchar();  //TODO: should this be implemented with curses?
                     break;
 
                 case 0xF015:    //0xFX15
