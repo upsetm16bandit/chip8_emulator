@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include <cassert>
+#include <ctime>
 
 #define MEMORY_SIZE         4096        //chip 8 vm only has 4k
 #define CPU_GPR_COUNT       16
@@ -77,6 +78,9 @@ class CHIP8_EMULATOR
     bool isRomLoaded;                                   //whether a ROM is currently loaded into emulator RAM
     static bool isRNGSeeded;                            //whether pseudo-random number generator has been seeded. (init to false per c++ standard)
     ushort sizeOfROM;
+    static void decrementTimers(int);                             //this function is called to handle the timer variables
+    static itimerval timer;
+    static sigaction sa;
 };
 
 

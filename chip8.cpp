@@ -20,6 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstring>
 #include <cstdlib>  //for rand() call
 #include <ctime>    //for seeding rand()
+#include <csignal>
+#include <signal.h>
+#include <sys/time.h>
 #include "chip8.h"
 
 using namespace std;
@@ -32,6 +35,9 @@ System Memory Map:
 */
 
 bool CHIP8_EMULATOR::isRNGSeeded;
+// CHIP8_EMULATOR::itimerval timer;
+// itimerval CHIP8_EMULATOR::timer;
+// sigaction CHIP8_EMULATOR::sa;
 
 CHIP8_EMULATOR::CHIP8_EMULATOR()
 {
@@ -40,6 +46,19 @@ CHIP8_EMULATOR::CHIP8_EMULATOR()
         srand(time(0));  //seed the pseudo-RNG
     }
     initEmulator();
+
+    //init timers
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = &decrementTimers; //register decrement function to timer
+    sigaction(SIGALRM, &sa, NULL);
+    /* Need emulator timers to count down at 60Hz... */
+    timer.it_value.tv_sec = 0;
+    timer.it_value.tv_usec = 16666;
+
+    timer.it_interval.tv_sec = 0;
+    timer.it_interval.tv_usec = 16666;
+    /* Start a real timer, based on wall time. */
+    setitimer (ITIMER_REAL, &timer, NULL);
 }
 
 CHIP8_EMULATOR::~CHIP8_EMULATOR()
@@ -125,6 +144,7 @@ ushort CHIP8_EMULATOR::popAddrFromStack()
 {
     ushort addressValue;
     addressValue = (*sp);
+    assert(sp != sb); //we cant pop from stack if the stack is empty
     --sp; //move the stack pointer down by 1 since we have removed the value.
     return addressValue;   //validate bounds?
 }
@@ -189,6 +209,7 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
             {
                 case 0x00E0:    //0x00E0
                     //Clears the screen.
+                    cerr << "Opcode not yet implemented..." << endl;
                     break;
 
                 case 0x00EE:    //0x00EE
@@ -362,6 +383,7 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
              *8 pixels is read as bit-coded starting from memory location I; I value doesn’t change after the execution 
              of this instruction. As described above, VF is set to 1 if any screen pixels are flipped from set to unset 
              when the sprite is drawn, and to 0 if that doesn’t happen*/
+             cerr << "Opcode not yet implemented..." << endl;
              break;
 
         case 0xE000:    //0xEX9E or 0xExA1
@@ -369,10 +391,12 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
             {
                 case 0xE09E:    //0xEX9E
                     //Skips the next instruction if the key stored in VX is pressed. (Usually the next instruction is a jump to skip a code block)
+                    cerr << "Opcode not yet implemented..." << endl;
                     break;
 
                 case 0xE0A1:    //0xE0A1
                     //Skips the next instruction if the key stored in VX isn't pressed. (Usually the next instruction is a jump to skip a code block)
+                    cerr << "Opcode not yet implemented..." << endl;
                     break;
 
                 default:
@@ -391,6 +415,7 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
 
                 case 0xF00A:    //0xFX0A
                     //A key press is awaited, and then stored in VX. (Blocking Operation. All instruction halted until next key event)
+                    cerr << "Opcode not yet implemented..." << endl;
                     break;
 
                 case 0xF015:    //0xFX15
@@ -410,6 +435,7 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
 
                 case 0xF029:    //0xFX29
                     //Sets I to the location of the sprite for the character in VX. Characters 0-F (in hexadecimal) are represented by a 4x5 font
+                    cerr << "Opcode not yet implemented..." << endl;
                     break;
 
                 case 0xF033:    //0xFX33
@@ -417,7 +443,8 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
                      * the middle digit at I plus 1, and the least significant digit at I plus 2. (In other words, take the decimal 
                      * representation of VX, place the hundreds digit in memory at location in I, the tens digit at location I+1, and the 
                      * ones digit at location I+2.)
-                    */                   
+                    */
+                   cerr << "Opcode not yet implemented..." << endl;
                     break;
 
                 case 0xF055:    //0xFX55
@@ -447,4 +474,16 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
             returnValue = ERR_INVALID_OPCODE;
     }
     return returnValue;
+}
+
+void CHIP8_EMULATOR::decrementTimers(int)
+{
+    if(delayTimer > 0)
+    {
+        --delayTimer;
+    }
+    if(soundTimer > 0)
+    {
+        --soundTimer;
+    }
 }
