@@ -63,6 +63,8 @@ class CHIP8_EMULATOR
     ushort* logicalAddressToPhysical(ushort logicalAddr, ushort base = BASE_RAM_OFFSET);
     ushort physicalAddressToLogical(ushort *physicalAddr);
 
+    static void initGFX();                              //initializes the graphics interface (ncurses etc)
+
 
     private:
     ushort *programCounter;
@@ -77,6 +79,8 @@ class CHIP8_EMULATOR
     bool isRomLoaded;                                   //whether a ROM is currently loaded into emulator RAM
     static bool isRNGSeeded;                            //whether pseudo-random number generator has been seeded. (init to false per c++ standard)
     ushort sizeOfROM;
+
+    void initFont();                                    //this function is called on object init to load font sprites into memory
 };
 
 

@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstring>
 #include <cstdlib>  //for rand() call
 #include <ctime>    //for seeding rand()
+#include <ncurses.h>
 #include "chip8.h"
 
 using namespace std;
@@ -63,6 +64,9 @@ int CHIP8_EMULATOR::initEmulator()
 
     isRomLoaded = false;
     sizeOfROM = 0;
+
+    initFont(); //load font into emulator RAM
+
     return STATUS_SUCCESS;
 }
 
@@ -449,4 +453,36 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
             returnValue = ERR_INVALID_OPCODE;
     }
     return returnValue;
+}
+
+void CHIP8_EMULATOR::initGFX()
+{
+    initscr(); //init ncurses screen
+    cbreak();   //disable tty buffering and get 1 character at a time
+    noecho();   //dont echo back typed characters
+    //default ncurses win is called stdscr
+    wmove(stdscr, 0, 0);        //move cursor to position (0,0)
+    wrefresh(stdscr);           //refresh display
+}
+
+void CHIP8_EMULATOR::initFont()
+{
+    const unsigned char fontData[80] = {0xF0, 0x90, 0x90, 0x90, 0xF0,    //0
+                               0x20, 0x60, 0x20, 0x20, 0x70,    //1
+                               0xF0, 0x10, 0xF0, 0x80, 0xF0,    //2
+                               0xF0, 0x10, 0xF0, 0x10, 0xF0,    //3
+                               0x90, 0x90, 0xF0, 0x10, 0x10,    //4
+                               0xF0, 0x80, 0xF0, 0x10, 0xF0,    //5
+                               0xF0, 0x80, 0xF0, 0x90, 0xF0,    //6
+                               0xF0, 0x10, 0x20, 0x40, 0x40,    //7
+                               0xF0, 0x90, 0xF0, 0x90, 0xF0,    //8
+                               0xF0, 0x90, 0xF0, 0x10, 0xF0,    //9
+                               0xF0, 0x90, 0xF0, 0x90, 0x90,    //A
+                               0xE0, 0x90, 0xE0, 0x90, 0xE0,    //B
+                               0xF0, 0x80, 0x80, 0x80, 0xF0,    //C
+                               0xE0, 0x90, 0x90, 0x90, 0xE0,    //D
+                               0xF0, 0x80, 0xF0, 0x80, 0xF0,    //E
+                               0xF0, 0x80, 0xF0, 0x80, 0x80     //F
+                               };
+    memcpy(memory, fontData, 80); //load the Fonts into emulator memory 
 }
