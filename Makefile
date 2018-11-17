@@ -7,13 +7,13 @@
 # for C++ define  CC = g++
 CC = g++
 CFLAGS  = -g -Wall
-LFLAGS = 
+LDFLAGS = -lncurses
 
 
 default: chip8_emulator
 
 chip8_emulator:  chip8.o main.o
-	$(CC) $(CFLAGS) $(LFLAGS) -o chip8_emulator chip8.o main.o
+	$(CC) $(CFLAGS) -o chip8_emulator chip8.o main.o $(LDFLAGS)
 
 chip8.o:  chip8.cpp chip8.h
 	$(CC) $(CFLAGS) -c chip8.cpp
