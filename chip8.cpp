@@ -159,7 +159,8 @@ int CHIP8_EMULATOR::emulatorTick()
     //Decode Instruction
     decodeAndExecuteInstruction(opcode);  //decode opcode and execute
 
-    //Execute Instruction
+    //update the display
+    refreshDisplay();
 
     return STATUS_SUCCESS;
 }
@@ -462,6 +463,36 @@ void CHIP8_EMULATOR::initGFX()
     cbreak();   //disable tty buffering and get 1 character at a time
     noecho();   //dont echo back typed characters
     //default ncurses win is called stdscr
+    wmove(stdscr, 0, 0);        //move cursor to position (0,0)
+    wrefresh(stdscr);           //refresh display
+}
+
+void CHIP8_EMULATOR::refreshDisplay()
+{
+    wmove(stdscr, 0, 0);
+    for (int row = 0; row < GFX_ROWS; row++)
+    {
+        for(int col = 0; col < GFX_COLS; col+=8)
+        {
+            for(int i = 7; i >= 0; i--)
+            {
+                bool pixelValue = (graphics[row * GFX_COLS + col] >> i) & 0x1;
+                if(pixelValue)
+                {
+                    //pixel set, display to screen
+                    wmove(stdscr, row, col);
+                    waddch(stdscr,'*');
+                }
+                else
+                {
+                    //pixel not set
+                    wmove(stdscr, row, col);
+                    waddch(stdscr,' ');
+                }
+                
+            }
+        }
+    }
     wmove(stdscr, 0, 0);        //move cursor to position (0,0)
     wrefresh(stdscr);           //refresh display
 }

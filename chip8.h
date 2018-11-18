@@ -20,7 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MEMORY_SIZE         4096        //chip 8 vm only has 4k
 #define CPU_GPR_COUNT       16
-#define GFX_BUFFER_SIZE     64 * 32     //Buffer Array
+#define GFX_COLS            64
+#define GFX_ROWS            32
+#define GFX_BUFFER_SIZE     (GFX_COLS/8) * (GFX_ROWS/8)     //Buffer Array
 #define MAX_FILENAME_LEN    256
 
 #define BASE_RAM_OFFSET     0x200       //lowest ram offset for program use
@@ -64,6 +66,7 @@ class CHIP8_EMULATOR
     ushort physicalAddressToLogical(ushort *physicalAddr);
 
     static void initGFX();                              //initializes the graphics interface (ncurses etc)
+    void refreshDisplay();                              //Writes out the graphics memory info to the display
 
 
     private:
