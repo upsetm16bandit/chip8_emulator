@@ -6,7 +6,7 @@
 #
 # for C++ define  CC = g++
 CC = g++
-CFLAGS  = -g -Wall
+CFLAGS  = -g -Wall -DDEBUG_LOG_OUTPUT
 LDFLAGS = -lncurses
 
 

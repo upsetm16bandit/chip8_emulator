@@ -50,9 +50,9 @@ CHIP8_EMULATOR::~CHIP8_EMULATOR()
 
 int CHIP8_EMULATOR::initEmulator()
 {
-    memset(memory, 0, MEMORY_SIZE);             //zero out the chips memory regions
-    memset(v, 0, CPU_GPR_COUNT);                //zero out the cpu's GPRs
-    memset(graphics, 0, GFX_BUFFER_SIZE);       //zero gfx buffer.  Should this be seperate from system memory?
+    memset(memory, 0, MEMORY_SIZE * sizeof(unsigned char));             //zero out the chips memory regions
+    memset(v, 0, CPU_GPR_COUNT * sizeof(unsigned char));                //zero out the cpu's GPRs
+    memset(graphics, 255, GFX_BUFFER_SIZE*sizeof(unsigned char));       //zero gfx buffer.  Should this be seperate from system memory?
     delayTimer = 0;
     soundTimer = 0;
 
@@ -154,7 +154,16 @@ int CHIP8_EMULATOR::emulatorTick()
     ushort opcode = 0;
     //Fetch Instruction
     opcode = fetchInstruction();
+    #ifdef DEBUG_LOG_OUTPUT    
+    int maxRows;
+    int maxCols;
+    getmaxyx(stdscr, maxRows, maxCols);
+    // wmove(stdscr, maxRows, 0);
+    mvprintw(maxRows-1, 0, "Fetched Opcode: 0x%4x",opcode);
+    wrefresh(stdscr);           //refresh display
+    #else    
     cout << "Fetched Opcode: 0x" << hex << opcode << dec << endl;
+    #endif
 
     //Decode Instruction
     decodeAndExecuteInstruction(opcode);  //decode opcode and execute
@@ -470,23 +479,29 @@ void CHIP8_EMULATOR::initGFX()
 void CHIP8_EMULATOR::refreshDisplay()
 {
     wmove(stdscr, 0, 0);
+
+    #ifdef DEBUG_LOG_OUTPUT
+    getch();
+    #endif
+
     for (int row = 0; row < GFX_ROWS; row++)
     {
-        for(int col = 0; col < GFX_COLS; col+=8)
+        for(int col = 0; col < GFX_COLS; col++)
         {
+            wmove(stdscr, row, col);
             for(int i = 7; i >= 0; i--)
             {
-                bool pixelValue = (graphics[row * GFX_COLS + col] >> i) & 0x1;
+                bool pixelValue = (graphics[(row * GFX_COLS) + col] >> i) & 0x1;
                 if(pixelValue)
                 {
                     //pixel set, display to screen
-                    wmove(stdscr, row, col);
+                    // wmove(stdscr, row, col*(7-i));
                     waddch(stdscr,'*');
                 }
                 else
                 {
                     //pixel not set
-                    wmove(stdscr, row, col);
+                    // wmove(stdscr, row, col+(7-i));
                     waddch(stdscr,' ');
                 }
                 
