@@ -56,7 +56,7 @@ class CHIP8_EMULATOR
 
     int loadROM(char filename[MAX_FILENAME_LEN]);       //loads ROM file into memory
     void positionPC();                                  //moves the PC to point to the start of RAM for execution
-    int incrementPC(ushort offset = 1);                 //increments the program counter
+    int incrementPC(ushort offset = 2);                 //increments the program counter
     int setPC(ushort address);
     void pushAddrToStack(ushort address);               //pushes return address onto the stack
     ushort popAddrFromStack();                          //pops address off the stack
@@ -70,8 +70,8 @@ class CHIP8_EMULATOR
 
 
     private:
-    ushort *programCounter;
-    ushort indexRegister;
+    ushort *programCounter;                             // 16 bit program counter register
+    ushort indexRegister;                               // 16 Bit index register
     unsigned char v[CPU_GPR_COUNT];                     //General purpose registers
     unsigned char memory[MEMORY_SIZE];                  //this holds the entirety of the emulator's memory
     unsigned char graphics[GFX_BUFFER_SIZE];

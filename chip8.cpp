@@ -111,8 +111,8 @@ int CHIP8_EMULATOR::incrementPC(ushort offset)
 
 int CHIP8_EMULATOR::setPC(ushort address)
 {   //TODO: perform bounds checking
-    // programCounter = &memory[BASE_RAM_OFFSET] + address;
-    programCounter = logicalAddressToPhysical(address);
+
+    programCounter = logicalAddressToPhysical(address);        
     return STATUS_SUCCESS;
 }
 
@@ -292,7 +292,7 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
 
                 case 0x0004:        //0x8XY4
                     //Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there isn't.
-                    if( ((ushort) v[(opcode & 0x0F00)>>8] + (ushort) v[(opcode & 0x00F0)>>4]) >255) //we need to set the carry flag
+                    if( ((ushort) v[(opcode & 0x0F00)>>8] + (ushort) v[(opcode & 0x00F0)>>4]) > 255) //we need to set the carry flag
                     {
                         v[0xF] = 1;
                     }
