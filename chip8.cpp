@@ -141,7 +141,8 @@ ushort CHIP8_EMULATOR::getSizeOfLoadedROM()
 
 ushort* CHIP8_EMULATOR::logicalAddressToPhysical(ushort logicalAddr, ushort base) //this should be validated...
 {
-    return (ushort*) &memory[base + (logicalAddr & 0xFFF)];
+    // return (ushort*) &memory[base + (logicalAddr & 0xFFF)];
+    return (unsigned short*) &memory[(logicalAddr & 0xFFF)];
 }
 
 ushort CHIP8_EMULATOR::physicalAddressToLogical(ushort *physicalAddr)  //this should be validated...
