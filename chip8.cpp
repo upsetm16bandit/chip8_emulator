@@ -205,6 +205,8 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
             {
                 case 0x00E0:    //0x00E0
                     //Clears the screen.
+                    // TODO: Implement. Should this clear out the gfx buffer too?
+                    refresh(); // same as wrefresh(stdscr)
                     break;
 
                 case 0x00EE:    //0x00EE
