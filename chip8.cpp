@@ -388,10 +388,14 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
             {
                 case 0xE09E:    //0xEX9E
                     //Skips the next instruction if the key stored in VX is pressed. (Usually the next instruction is a jump to skip a code block)
+                    // TODO: Implement
+                    assert(opcode != 0xF0FF);   // trap so we know to implement
                     break;
 
                 case 0xE0A1:    //0xE0A1
                     //Skips the next instruction if the key stored in VX isn't pressed. (Usually the next instruction is a jump to skip a code block)
+                    // TODO: Implement
+                    assert(opcode != 0xE0A1);   // trap so we know to implement
                     break;
 
                 default:
@@ -438,6 +442,8 @@ int CHIP8_EMULATOR::decodeAndExecuteInstruction(ushort opcode)
                      * representation of VX, place the hundreds digit in memory at location in I, the tens digit at location I+1, and the 
                      * ones digit at location I+2.)
                     */
+                    // TODO: Implement
+                    assert(opcode != 0xF033);   // trap so we know to implement
                     break;
 
                 case 0xF055:    //0xFX55
